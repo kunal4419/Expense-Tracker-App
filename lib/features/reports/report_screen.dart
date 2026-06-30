@@ -53,10 +53,29 @@ class _ReportScreenState extends ConsumerState<ReportScreen> {
     }
   }
 
+  DateTime? _selectedMonth;
+
+  List<DateTime> _getRecentMonths() {
+    final now = DateTime.now();
+    return List.generate(12, (index) {
+      return DateTime(now.year, now.month - index, 1);
+    });
+  }
+
   Future<void> _exportPdf() async {
-    if (_allExpenses.isEmpty) {
+    final expensesToExport = _selectedMonth == null
+        ? _allExpenses
+        : _allExpenses.where((e) =>
+            e.expenseDate.year == _selectedMonth!.year &&
+            e.expenseDate.month == _selectedMonth!.month).toList();
+
+    if (expensesToExport.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('No expenses recorded to export.')),
+        SnackBar(
+          content: Text(_selectedMonth == null
+              ? 'No expenses recorded to export.'
+              : 'No expenses recorded for ${DateFormat('MMMM yyyy').format(_selectedMonth!)} to export.'),
+        ),
       );
       return;
     }
@@ -70,9 +89,28 @@ class _ReportScreenState extends ConsumerState<ReportScreen> {
       final dateStr = DateFormat('yyyy-MM-dd').format(DateTime.now());
       final currencyFormat = NumberFormat.currency(locale: 'en_IN', symbol: '', decimalDigits: 2);
       
-      final monthlySales = ref.read(salesProvider).monthTotal;
-      final monthlyExpenses = ref.read(expenseProvider).monthTotal;
-      final netProfitLoss = monthlySales - monthlyExpenses;
+      double targetExpenses = 0.0;
+      double targetSales = 0.0;
+
+      if (_selectedMonth != null) {
+        targetExpenses = expensesToExport.fold(0.0, (sum, e) => sum + e.amount);
+
+        final salesList = ref.read(salesProvider).sales;
+        final filteredSales = salesList.where((s) =>
+            s.entryDate.year == _selectedMonth!.year &&
+            s.entryDate.month == _selectedMonth!.month).toList();
+        targetSales = filteredSales.fold(0.0, (sum, s) => sum + s.morningSales + s.eveningSales);
+      } else {
+        targetExpenses = _allExpenses.fold(0.0, (sum, e) => sum + e.amount);
+
+        final salesList = ref.read(salesProvider).sales;
+        targetSales = salesList.fold(0.0, (sum, s) => sum + s.morningSales + s.eveningSales);
+      }
+
+      final netProfitLoss = targetSales - targetExpenses;
+      final reportTitle = _selectedMonth == null
+          ? 'Financial Summary Report (All Time)'
+          : 'Financial Summary Report (${DateFormat('MMMM yyyy').format(_selectedMonth!)})';
 
       pdf.addPage(
         pw.MultiPage(
@@ -83,14 +121,14 @@ class _ReportScreenState extends ConsumerState<ReportScreen> {
               child: pw.Row(
                 mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
                 children: [
-                  pw.Text('Expense Tracker Summary Report', 
-                      style: pw.TextStyle(fontSize: 20, fontWeight: pw.FontWeight.bold)),
+                  pw.Text(reportTitle, 
+                      style: pw.TextStyle(fontSize: 18, fontWeight: pw.FontWeight.bold)),
                   pw.Text('Date: $dateStr', style: const pw.TextStyle(fontSize: 12)),
                 ],
               ),
             ),
             pw.SizedBox(height: 10),
-            pw.Text('Total Logged Transactions: ${_allExpenses.length}', 
+            pw.Text('Total Logged Transactions: ${expensesToExport.length}', 
                 style: const pw.TextStyle(fontSize: 12)),
             pw.SizedBox(height: 15),
 
@@ -109,16 +147,16 @@ class _ReportScreenState extends ConsumerState<ReportScreen> {
                   pw.Row(
                     mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
                     children: [
-                      pw.Text('Monthly Total Sales:'),
-                      pw.Text(currencyFormat.format(monthlySales), style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
+                      pw.Text('Total Sales:'),
+                      pw.Text(currencyFormat.format(targetSales), style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
                     ],
                   ),
                   pw.SizedBox(height: 4),
                   pw.Row(
                     mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
                     children: [
-                      pw.Text('Monthly Total Expenses:'),
-                      pw.Text(currencyFormat.format(monthlyExpenses), style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
+                      pw.Text('Total Expenses:'),
+                      pw.Text(currencyFormat.format(targetExpenses), style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
                     ],
                   ),
                   pw.SizedBox(height: 6),
@@ -149,7 +187,7 @@ class _ReportScreenState extends ConsumerState<ReportScreen> {
               cellAlignments: {
                 4: pw.Alignment.centerRight,
               },
-              data: _allExpenses.map((e) {
+              data: expensesToExport.map((e) {
                 return [
                   DateFormat('yyyy-MM-dd').format(e.expenseDate),
                   e.title,
@@ -164,7 +202,7 @@ class _ReportScreenState extends ConsumerState<ReportScreen> {
             pw.Align(
               alignment: pw.Alignment.centerRight,
               child: pw.Text(
-                'Total Spendings: ${currencyFormat.format(_allExpenses.fold<double>(0.0, (sum, e) => sum + e.amount))}',
+                'Total Spendings: ${currencyFormat.format(expensesToExport.fold<double>(0.0, (sum, e) => sum + e.amount))}',
                 style: pw.TextStyle(fontSize: 15, fontWeight: pw.FontWeight.bold),
               ),
             ),
@@ -299,6 +337,38 @@ class _ReportScreenState extends ConsumerState<ReportScreen> {
                             style: theme.textTheme.bodyMedium?.copyWith(
                               color: theme.colorScheme.onSurfaceVariant,
                             ),
+                          ),
+                          const Gap(12),
+                          Row(
+                            children: [
+                              Text(
+                                'Select Month: ',
+                                style: theme.textTheme.bodyMedium?.copyWith(
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              const Gap(8),
+                              DropdownButton<DateTime?>(
+                                value: _selectedMonth,
+                                items: [
+                                  const DropdownMenuItem(
+                                    value: null,
+                                    child: Text('All Time'),
+                                  ),
+                                  ..._getRecentMonths().map((m) {
+                                    return DropdownMenuItem(
+                                      value: m,
+                                      child: Text(DateFormat('MMMM yyyy').format(m)),
+                                    );
+                                  }),
+                                ],
+                                onChanged: (val) {
+                                  setState(() {
+                                    _selectedMonth = val;
+                                  });
+                                },
+                              ),
+                            ],
                           ),
                         ],
                       );
