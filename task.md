@@ -1,0 +1,37 @@
+# Implementation Tasks
+
+- [x] **Phase 1: Project Setup**
+  - [x] Add dependencies to `pubspec.yaml`
+  - [x] Run `flutter pub get`
+  - [x] Create project directories
+- [x] **Phase 2: Database Setup & Migrations**
+  - [x] Create SQL migrations for tables (`users`, `categories`, `expenses`), triggers, and RLS policies
+  - [x] Run local database migrations or guide user to link remote Supabase database
+- [x] **Phase 3: Models Setup (Freezed)**
+  - [x] Create `app_user.dart`
+  - [x] Create `category.dart`
+  - [x] Create `expense.dart`
+  - [x] Run `build_runner` to generate files
+- [x] **Phase 4: Core Services & Repositories**
+  - [x] Create `supabase_service.dart`
+  - [x] Create `auth_repository.dart`
+  - [x] Create `category_repository.dart`
+  - [x] Create `expense_repository.dart`
+- [x] **Phase 5: State Management (Riverpod)**
+  - [x] Create auth provider
+  - [x] Create category provider
+  - [x] Create expense provider
+- [x] **Phase 6: Navigation & Theme Setup**
+  - [x] Create router configuration
+  - [x] Setup app entrypoint and theme with flex_color_scheme
+- [x] **Phase 7: Responsive UI & Screens**
+  - [x] Create Login Screen
+  - [x] Create Home Shell (Responsive Sidebar/Bottom Navigation)
+  - [x] Create Dashboard Screen (Summary cards & 5 recent expenses)
+  - [x] Create Category Management Screen
+  - [x] Create Expense List Screen (Search, filter, sort)
+  - [x] Create Add / Edit Expense Screens
+  - [x] Create Report Screen with PDF Exporting
+- [x] **Phase 8: Verification & Walkthrough**
+  - [x] Run `flutter analyze`
+  - [x] Document final walkthrough
