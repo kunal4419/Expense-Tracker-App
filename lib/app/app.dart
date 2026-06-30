@@ -11,7 +11,7 @@ class MyApp extends ConsumerWidget {
     final router = ref.watch(routerProvider);
 
     return MaterialApp.router(
-      title: 'Expense Tracker',
+      title: 'ExpenseBook',
       theme: AppTheme.lightTheme,
       themeMode: ThemeMode.light,
       routerConfig: router,

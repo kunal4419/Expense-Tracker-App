@@ -68,7 +68,7 @@ class _ReportScreenState extends ConsumerState<ReportScreen> {
     try {
       final pdf = pw.Document();
       final dateStr = DateFormat('yyyy-MM-dd').format(DateTime.now());
-      final currencyFormat = NumberFormat.currency(locale: 'en_IN', symbol: '₹', decimalDigits: 2);
+      final currencyFormat = NumberFormat.currency(locale: 'en_IN', symbol: '', decimalDigits: 2);
       
       final monthlySales = ref.read(salesProvider).monthTotal;
       final monthlyExpenses = ref.read(expenseProvider).monthTotal;
@@ -172,9 +172,9 @@ class _ReportScreenState extends ConsumerState<ReportScreen> {
         ),
       );
 
-      await Printing.sharePdf(
-        bytes: await pdf.save(), 
-        filename: 'expense_summary_report_$dateStr.pdf',
+      await Printing.layoutPdf(
+        onLayout: (format) async => pdf.save(), 
+        name: 'expense_summary_report_$dateStr.pdf',
       );
     } catch (e) {
       if (mounted) {

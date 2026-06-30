@@ -1,6 +1,6 @@
 {
-    "name": "expense",
-    "short_name": "expense",
+    "name": "ExpenseBook",
+    "short_name": "ExpenseBook",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",

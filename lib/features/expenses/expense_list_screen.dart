@@ -5,7 +5,6 @@ import 'package:intl/intl.dart';
 import 'package:gap/gap.dart';
 import '../../providers/expense_provider.dart';
 import '../../providers/category_provider.dart';
-import '../../models/expense.dart';
 
 class ExpenseListScreen extends ConsumerStatefulWidget {
   const ExpenseListScreen({super.key});
@@ -71,7 +70,6 @@ class _ExpenseListScreenState extends ConsumerState<ExpenseListScreen> {
     final expenseState = ref.watch(expenseProvider);
     final categoryState = ref.watch(categoryProvider);
     final theme = Theme.of(context);
-    final size = MediaQuery.of(context).size;
     final currencyFormat = NumberFormat.currency(locale: 'en_IN', symbol: '₹', decimalDigits: 2);
 
     final activeFilter = expenseState.filter;
