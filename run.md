@@ -1,0 +1,3 @@
+flutter build apk \
+  --dart-define=SUPABASE_URL=https://uxnguycscjrmxvlkakac.supabase.co \
+  --dart-define=SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InV4bmd1eWNzY2pybXh2bGtha2FjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI3ODI5MjAsImV4cCI6MjA5ODM1ODkyMH0.YJifdc3QwRz7kxUKZzBL9rkzJ4OK9oHmTjodG-nzCGc
